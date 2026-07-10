@@ -12,7 +12,7 @@ stockfishts is a TypeScript library for running Stockfish engines from both fron
 ## Installation
 
 ```bash
-npm install stockfishts
+npm install @jalpp/stockfishts
 ```
 
 ## Quick start
