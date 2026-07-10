@@ -22,7 +22,7 @@ npm install @jalpp/stockfishts
 ### Browser usage
 
 ```ts
-import { StockfishWasmEngine, EngineName } from 'stockfishts';
+import { StockfishWasmEngine, EngineName } from '@jalpp/stockfishts';
 
 const engine = new StockfishWasmEngine('/stockfish.wasm.js', EngineName.Stockfish16);
 await engine.init();
@@ -40,7 +40,7 @@ engine.shutdown();
 ### Node.js usage
 
 ```ts
-import { StockfishWasmEngine, EngineName } from 'stockfishts';
+import { StockfishWasmEngine, EngineName } from '@jalpp/stockfishts';
 
 const engine = new StockfishWasmEngine('/path/to/stockfish.wasm.js', EngineName.Stockfish18);
 await engine.init();
@@ -68,7 +68,7 @@ engine.shutdown();
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StockfishWasmEngine, EngineName } from 'stockfishts';
+import { StockfishWasmEngine, EngineName } from '@jalpp/stockfishts';
 
 export default function ChessPage() {
   const [score, setScore] = useState<string>('Loading...');
@@ -102,7 +102,7 @@ export default function ChessPage() {
 
 ```tsx
 import { useEffect, useState } from 'react';
-import { StockfishWasmEngine, EngineName } from 'stockfishts';
+import { StockfishWasmEngine, EngineName } from '@jalpp/stockfishts';
 
 export function ChessEvaluator() {
   const [evaluation, setEvaluation] = useState('');
@@ -187,7 +187,7 @@ const pickEngine = (engine: EngineName): UciEngine => {
 ### Plain TypeScript example
 
 ```ts
-import { StockfishWasmEngine, EngineName } from 'stockfishts';
+import { StockfishWasmEngine, EngineName } from '@jalpp/stockfishts';
 
 async function evaluate() {
   const engine = new StockfishWasmEngine('./stockfish.wasm.js', EngineName.Stockfish16);
@@ -208,7 +208,7 @@ void evaluate();
 ### Custom wasm engine example
 
 ```ts
-import { CustomUciEngine, EngineName } from 'stockfishts';
+import { CustomUciEngine, EngineName } from '@jalpp/stockfishtss';
 
 const engine = new CustomUciEngine('/my-custom-engine.wasm.js', EngineName.Stockfish16, {
   checkWasmSupport: true,
@@ -282,7 +282,7 @@ npm run build
 
 ## Credits
 
-Special thanks who helped creating Stockfishts possible
+Special thanks to below authors who helped creating Stockfishts possible
 
 - [Stockfish Authors](https://github.com/official-stockfish/Stockfish/blob/master/AUTHORS)
 - [Jack Stenglein](https://github.com/jackstenglein)
