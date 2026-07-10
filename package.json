@@ -1,0 +1,57 @@
+{
+  "name": "stockfishts",
+  "version": "0.1.0",
+  "description": "TypeScript library for running Stockfish engines in browser and Node.js environments with WebAssembly and worker support.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepare": "npm run build",
+    "publish:check": "npm publish --dry-run"
+  },
+  "keywords": [
+    "typescript",
+    "stockfish",
+    "chess",
+    "engine",
+    "webassembly",
+    "worker",
+    "tsup"
+  ],
+  "license": "MIT",
+  "author": "jalpp",
+  "homepage": "https://github.com/jalpp/stockfishts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jalpp/stockfishts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/stockfishts/issues"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "private": false,
+  "devDependencies": {
+    "tsup": "^8.1.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "async-mutex": "^0.5.0"
+  }
+}
