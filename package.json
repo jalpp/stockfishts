@@ -15,18 +15,25 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "prepare": "npm run build",
-    "publish:check": "npm publish --dry-run"
+    "publish:check": "npm publish --dry-run",
+    "prepublishOnly": "npm run build",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major",
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": [
     "typescript",
     "stockfish",
     "chess",
+    "uciengine",
     "engine",
     "webassembly",
     "worker",
