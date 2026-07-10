@@ -1,5 +1,5 @@
 {
-  "name": "jalpp/stockfishts",
+  "name": "@jalpp/stockfishts",
   "version": "0.1.0",
   "description": "TypeScript library for running Stockfish engines in browser and Node.js environments with WebAssembly and worker support.",
   "main": "dist/index.js",
