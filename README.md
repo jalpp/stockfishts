@@ -42,7 +42,7 @@ engine.shutdown();
 ```ts
 import { StockfishWasmEngine, EngineName } from 'stockfishts';
 
-const engine = new StockfishWasmEngine('/path/to/stockfish.wasm.js', EngineName.Stockfish16);
+const engine = new StockfishWasmEngine('/path/to/stockfish.wasm.js', EngineName.Stockfish18);
 await engine.init();
 
 const evaluation = await engine.evaluatePositionWithUpdate({
@@ -77,7 +77,7 @@ export default function ChessPage() {
     let engine: StockfishWasmEngine | undefined;
 
     async function run() {
-      engine = new StockfishWasmEngine('/stockfish.wasm.js', EngineName.Stockfish16);
+      engine = new StockfishWasmEngine('/stockfish.wasm.js', EngineName.Stockfish18);
       await engine.init();
 
       const result = await engine.evaluatePositionWithUpdate({
