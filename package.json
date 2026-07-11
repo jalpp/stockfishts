@@ -33,6 +33,7 @@
     "typescript",
     "stockfish",
     "chess",
+    "chessdb",
     "uciengine",
     "engine",
     "webassembly",

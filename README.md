@@ -1,6 +1,6 @@
 # stockfishts
 
-stockfishts is a TypeScript library for running Stockfish engines from both frontend and backend projects. It supports WebAssembly-based engines, worker-based execution, and a small, ergonomic API for evaluating chess positions and receiving incremental updates.
+stockfishts is a TypeScript library for running Stockfish engines from both frontend and backend projects. It supports WebAssembly-based engines, worker-based execution, and a small, ergonomic API for evaluating chess positions and receiving incremental updates. Stockfishts also supports API wrapper for cloud based stockfish based chessdb.
 
 ## Why use stockfishts?
 
@@ -8,6 +8,7 @@ stockfishts is a TypeScript library for running Stockfish engines from both fron
 - Use the same API in Node.js environments when a Worker-compatible runtime is available
 - Send UCI commands directly through a simple engine abstraction
 - Receive evaluation updates while the engine is thinking
+- Connect to chessdb via ts based APIs
 
 ## Installation
 
@@ -53,6 +54,41 @@ const evaluation = await engine.evaluatePositionWithUpdate({
 console.log(evaluation);
 engine.shutdown();
 ```
+
+### ChessDB cloud database usage
+
+```ts
+import { ChessDbApi } from '@jalpp/stockfishts';
+
+const cdb = new ChessDbApi();
+
+const startpos = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+// All known candidate moves, with eval, win rate, rank and a quality note
+const all = await cdb.queryAll(startpos);
+if (all.success) {
+  console.log(all.data[0]); // { uci: 'e2e4', san: 'e4', score: '0.34', rawEval: 34, winrate: '55.32', rank: '1', note: 'Best' }
+}
+
+// ChessDB's single best known move
+const best = await cdb.queryBest(startpos);
+if (best.success) {
+  console.log(best.data.move); // 'e2e4'
+}
+
+// Principal variation (best line) with score and depth
+const pv = await cdb.queryPv(startpos);
+if (pv.success) {
+  console.log(pv.data.pvSAN.join(' '));
+}
+
+// Queue a position ChessDB doesn't know yet for background analysis
+await cdb.queue(startpos);
+```
+
+Every `ChessDbApi` method returns a `ChessDbResult<T>` (`{ success: true, data: T }` or
+`{ success: false, error: string }`) instead of throwing, so expected outcomes like an
+unknown position or an invalid FEN can be handled without try/catch.
 
 ## Runtime notes
 
@@ -184,6 +220,46 @@ const pickEngine = (engine: EngineName): UciEngine => {
 
 ```
 
+### useChessDb React hook
+
+```tsx
+import { useCallback, useEffect, useState } from 'react';
+import { ChessDbApi, type ChessDbMove } from '@jalpp/stockfishts';
+
+const cdb = new ChessDbApi();
+
+export function useChessDb(fen: string) {
+  const [data, setData] = useState<ChessDbMove[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMoves = useCallback(async (fenToQuery: string) => {
+    setLoading(true);
+    setError(null);
+
+    const result = await cdb.queryAll(fenToQuery);
+    if (result.success) {
+      setData(result.data);
+    } else {
+      setData([]);
+      setError(result.error);
+      // Ask ChessDB to analyze positions it doesn't know yet.
+      if (result.error === 'unknown') {
+        void cdb.queue(fenToQuery);
+      }
+    }
+
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void fetchMoves(fen);
+  }, [fen, fetchMoves]);
+
+  return { data, loading, error, refetch: () => fetchMoves(fen) };
+}
+```
+
 ### Plain TypeScript example
 
 ```ts
@@ -234,6 +310,7 @@ The package exports:
 - UciEngine as the base engine abstraction
 - EngineWorker as the worker interface
 - engine constants and result helpers from the engineTypes and parseResults modules
+- ChessDbApi as a typed client for the ChessDB (chessdb.cn) cloud chess database
 
 ### Public API reference
 
@@ -264,6 +341,29 @@ The package exports:
 
 Parses raw UCI engine messages into a PositionEval object with principal variations and evaluation data.
 
+#### ChessDbApi
+
+A typed `fetch`-based client for the [ChessDB](https://www.chessdb.cn/cloudbookc_api_en.html) cloud chess
+database. Every method resolves to a `ChessDbResult<T>` — `{ success: true, data: T }` on success, or
+`{ success: false, error: string }` for both network failures and ChessDB's own error responses (e.g.
+`"invalid board"`, `"unknown"`, `"nobestmove"`) — so callers don't need try/catch for expected outcomes.
+
+- constructor(options?): creates a client. `options.baseUrl` overrides the ChessDB endpoint; `options.fetchImpl` overrides the `fetch` implementation (useful in Node.js runtimes without a global `fetch`, or for tests)
+- queryAll(fen, options?): fetches every move ChessDB knows for a position, each with a formatted score, raw eval, win rate, rank and a human-readable quality note
+- queryBest(fen, options?): asks ChessDB for the single best known move
+- queryMove(fen, options?): asks ChessDB for one reasonable move, with some randomness (useful for varied play)
+- querySearchMoves(fen, options?): asks ChessDB for a list of candidate moves worth searching further, e.g. to pass to a local engine as `searchmoves`
+- queryScore(fen, options?): fetches ChessDB's standalone evaluation score for a position
+- queryPv(fen, options?): fetches ChessDB's principal variation (score, depth and moves) for a position
+- queue(fen): requests background analysis for a position ChessDB doesn't know yet
+- store(fen, move): requests analysis of one particular move from a position
+
+##### Helper functions
+
+- getChessDbNoteWord(note): converts ChessDB's raw note character (`"!"`, `"*"`, `"?"`) into a `"Best"` / `"Good"` / `"Bad"` / `"unknown"` label
+- getSideToMoveFromFen(fen): reads the side to move (`'w'` or `'b'`) out of a FEN string
+- normalizeChessDbScore(score, sideToMove): converts a ChessDB score (always from White's perspective) into a score relative to the side to move
+
 ## Example methods
 
 ```ts
@@ -287,6 +387,7 @@ Special thanks to below authors who helped creating Stockfishts possible
 - [Stockfish Authors](https://github.com/official-stockfish/Stockfish/blob/master/AUTHORS)
 - [Jack Stenglein](https://github.com/jackstenglein)
 - [ChessKit devs](https://github.com/GuillaumeSD/Chesskit)
+- ChessDB devs
 
 
 ## Author
