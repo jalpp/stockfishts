@@ -90,6 +90,54 @@ Every `ChessDbApi` method returns a `ChessDbResult<T>` (`{ success: true, data: 
 `{ success: false, error: string }`) instead of throwing, so expected outcomes like an
 unknown position or an invalid FEN can be handled without try/catch.
 
+### ChessDB fetch implementation notes
+
+`ChessDbApi` uses the runtime's `globalThis.fetch` by default, so in most setups you can create it without any extra configuration:
+
+```ts
+import { ChessDbApi } from '@jalpp/stockfishts';
+
+const cdb = new ChessDbApi();
+```
+
+#### Browser
+
+Modern browsers expose `fetch` globally, so no `fetchImpl` is required.
+
+```ts
+const cdb = new ChessDbApi();
+```
+
+#### Node.js
+
+Node.js 18+ includes a global `fetch`. In older Node versions, or when you want to use a specific implementation, pass one explicitly:
+
+```ts
+import { ChessDbApi } from '@jalpp/stockfishts';
+import { fetch as undiciFetch } from 'undici';
+
+const cdb = new ChessDbApi({
+  fetchImpl: undiciFetch as typeof fetch,
+});
+```
+
+#### Tests and custom runtimes
+
+If you are mocking network calls or running in a custom runtime, provide a `fetchImpl` that matches the `fetch` signature:
+
+```ts
+import { ChessDbApi } from '@jalpp/stockfishts';
+
+const mockedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  return new Response(JSON.stringify({ status: 'ok', moves: [] }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+const cdb = new ChessDbApi({ fetchImpl: mockedFetch as typeof fetch });
+```
+
 ## Runtime notes
 
 - In browser-based environments, the package expects a Worker-capable runtime and a reachable engine script URL.

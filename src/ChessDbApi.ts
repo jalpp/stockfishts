@@ -116,7 +116,7 @@ export interface ChessDbApiOptions {
     baseUrl?: string;
     /**
      * A custom `fetch` implementation, useful for testing or for runtimes
-     * without a global `fetch`. Defaults to the global `fetch`.
+     * without a global `fetch`. Defaults to the runtime's `globalThis.fetch`.
      */
     fetchImpl?: typeof fetch;
 }
@@ -200,13 +200,16 @@ export class ChessDbApi {
 
         if (options.fetchImpl) {
             this.fetchImpl = options.fetchImpl;
-        } else if (typeof fetch === 'undefined') {
-            throw new Error(
-                'Global fetch is not available in this environment. ' +
-                'Pass a fetchImpl (e.g. from undici or node-fetch) to the ChessDbApi constructor.',
-            );
         } else {
-            this.fetchImpl = fetch;
+            const globalFetch = globalThis.fetch;
+            if (typeof globalFetch === 'function') {
+                this.fetchImpl = globalFetch.bind(globalThis);
+            } else {
+                throw new Error(
+                    'Global fetch is not available in this environment. ' +
+                    'Pass a fetchImpl (e.g. from undici or node-fetch) to the ChessDbApi constructor.',
+                );
+            }
         }
     }
 
